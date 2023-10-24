@@ -1,0 +1,83 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: unsuspend-cluster
+spec:
+  entrypoint: main
+  arguments:
+    parameters:
+      - name: perform-backup
+        value: true
+        enum:
+          -   true
+          -   false
+      - name: perform-restore
+        value: true
+        enum:
+          -   true
+          -   
+      - name: restart-applications
+        value: true
+        enum:
+          -   true
+          -   false
+  templates:
+    - name: main
+      dag:
+        tasks:
+          - name: pre-validations
+            template: pre-validations
+          - name: backup-cluster
+            depends: pre-validations
+            template: backup-cluster
+            when: "{{workflow.parameters.perform-backup}}} == true"
+          - name: restore-cluster
+            depends: backup-cluster
+            template: restore-cluster
+            when: "{{workflow.parameters.perform-restore}}} == true"
+          - name: restart-applications
+            depends: backup-cluster
+            template: restart-applications
+            when: "{{workflow.parameters.restart-applications}}} == true"
+          - name: unsuspend-cluster
+            depends: restart-applications
+            template: unsuspend-cluster
+          - name: post-validations
+            depends: unsuspend-cluster
+            template: post-validations
+    - name: pre-validations
+      script:
+        image: python:alpine3.6
+        command: [ bash ]
+        source: |
+          echo 'test'
+    - name: backup-cluster
+      script:
+        image: python:alpine3.6
+        command: [ bash ]
+        source: |
+          echo 'test'
+    - name: restore-cluster
+      script:
+        image: python:alpine3.6
+        command: [ bash ]
+        source: |
+          echo 'test'
+    - name: restart-applications
+      script:
+        image: python:alpine3.6
+        command: [ bash ]
+        source: |
+          echo 'test'
+    - name: unsuspend-cluster
+      script:
+        image: python:alpine3.6
+        command: [ bash ]
+        source: |
+          echo 'test'
+    - name: post-validations
+      script:
+        image: python:alpine3.6
+        command: [ bash ]
+        source: |
+          curl ...
